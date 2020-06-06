@@ -46,7 +46,7 @@ public class WorkerServiceScheduledImpl implements WorkerServiceScheduled {
 
         for (PublicationResponse response : publicationResponseList) {
             PublicationRequest request = new PublicationRequest();
-            request.setText(request.getText());
+            request.setText(response.getText());
             List<String> groupIds = new ArrayList<>();
             for (GroupPostStatus status : response.getPostStatus()) {
                 groupIds.add(status.getGroupId().toString());
