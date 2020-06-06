@@ -38,4 +38,8 @@ docker-deploy-swarm:
     - echo "FB_SERVICE=http://fb-adapter:8081" >> .env_worker
     - echo "VK_SERVICE=http://vk-adapter:8082" >> .env_worker
     - echo "BSTAT_SERVICE=http://bstat:8884" >> .env_worker
+    - echo "RABBIT_HOST=rabbitmq" >> .env_worker
+    - echo "RABBIT_PORT=5672" >> .env_worker
+    - echo "RABBIT_USER=admin" >> .env_worker
+    - echo "RABBIT_PASS=2b01db35ec69408aa65276dd710bc99c" >> .env_worker
     - docker stack deploy -c docker-compose.yaml socshared

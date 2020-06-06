@@ -2,7 +2,7 @@ package ml.socshared.worker.domain.storage.response;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.*;
-import ml.socshared.gateway.domain.storage.SocialNetwork;
+import ml.socshared.worker.domain.storage.SocialNetwork;
 
 import java.util.UUID;
 
