@@ -24,6 +24,7 @@ import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import java.util.UUID;
 
@@ -84,6 +85,7 @@ public class WorkerServiceScheduledImpl implements WorkerServiceScheduled {
                         resultVk.setPostStatus(GroupPostStatus.PostStatus.PUBLISHED);
                         resultVk.setGroupIds(new String[]{group});
                         resultVk.setUserId(request.getUserId());
+                        resultVk.setPublicationDateTime(new Date());
                         storageService.savePublication(resultVk);
                         break;
                     case FACEBOOK:
@@ -96,19 +98,21 @@ public class WorkerServiceScheduledImpl implements WorkerServiceScheduled {
                         resultFb.setPostStatus(GroupPostStatus.PostStatus.PUBLISHED);
                         resultFb.setGroupIds(new String[]{group});
                         resultFb.setUserId(request.getUserId());
+                        resultFb.setPublicationDateTime(new Date());
                         storageService.savePublication(resultFb);
                         break;
                 }
             } catch (Exception exc) {
                 log.error(exc.getMessage());
-                PublicationRequest resultFb = new PublicationRequest();
-                resultFb.setType(request.getType());
-                resultFb.setPublicationId(request.getPublicationId());
-                resultFb.setText(request.getText());
-                resultFb.setPostStatus(GroupPostStatus.PostStatus.NOT_SUCCESSFUL);
-                resultFb.setGroupIds(new String[]{group});
-                resultFb.setUserId(request.getUserId());
-                storageService.savePublication(resultFb);
+                PublicationRequest result = new PublicationRequest();
+                result.setType(request.getType());
+                result.setPublicationId(request.getPublicationId());
+                result.setText(request.getText());
+                result.setPostStatus(GroupPostStatus.PostStatus.NOT_SUCCESSFUL);
+                result.setGroupIds(new String[]{group});
+                result.setUserId(request.getUserId());
+                result.setPublicationDateTime(new Date());
+                storageService.savePublication(result);
             }
         }
     }
