@@ -11,7 +11,7 @@ import java.util.UUID;
 @FeignClient(name = "fb-adapter", url = "${feign.url.fb:}")
 public interface FacebookAdapterClient {
 
-    @PostMapping(value = "/private/users/{systemUserId}/groups/{groupId}/posts", produces = MediaType.APPLICATION_JSON_VALUE,
+    @PostMapping(value = "/api/v1/private/users/{systemUserId}/groups/{groupId}/posts", produces = MediaType.APPLICATION_JSON_VALUE,
             consumes = MediaType.APPLICATION_JSON_VALUE)
     FacebookPostResponse addPost(@PathVariable UUID systemUserId, @PathVariable String groupId,
                                  @RequestBody FacebookPostRequest request, @RequestHeader("Authorization") String token);

@@ -14,7 +14,7 @@ import java.util.UUID;
 @FeignClient(name = "vk-adapter", url = "${feign.url.vk:}")
 public interface VKAdapterClient {
 
-    @PostMapping(value = "/private/users/{systemUserId}/groups/{groupId}/posts",
+    @PostMapping(value = "/api/v1/private/users/{systemUserId}/groups/{groupId}/posts",
             consumes = {MediaType.APPLICATION_JSON_VALUE})
     VkPostResponse addPostInGroup(@PathVariable UUID systemUserId, @PathVariable String groupId,
                                   @RequestBody VkPostRequest message, @RequestHeader("Authorization") String token);
