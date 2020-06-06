@@ -14,20 +14,28 @@ build:
   script: ./gradlew clean build
   artifacts:
     paths:
-      - build/libs/socshared-microservice-template-1.0.0-SNAPSHOT.jar
+      - build/libs/socshared-service-worker-1.0.0-SNAPSHOT.jar
 
 docker-build:
   stage: docker-build
   script:
-    - sudo docker build -t $CI_DOCKER_LOGIN/socshared-microservice-template .
+    - docker 2>/dev/null 1>&2 rmi `docker images -aq` || true
+    - docker build -t $CI_DOCKER_LOGIN/socshared-service-worker .
 
 docker-push:
   stage: docker-push
   script:
-    - sudo docker login -u "$CI_DOCKER_LOGIN" -p "$CI_DOCKER_PASSWORD"
-    - sudo docker push $CI_DOCKER_LOGIN/socshared-microservice-template
+    - docker login -u "$CI_DOCKER_LOGIN" -p "$CI_DOCKER_PASSWORD"
+    - docker push $CI_DOCKER_LOGIN/socshared-service-worker
 
 docker-deploy-swarm:
   stage: docker-deploy-swarm
   script:
-    - sudo docker stack deploy -c docker-compose.yaml socshared
+    - touch .env_worker
+    - echo "SPRING_PROFILE=dev" >> .env_worker
+    - echo "AUTH_SERVICE=http://auth-service:9999" >> .env_worker
+    - echo "STORAGE_SERVICE=http://storage-service:8686" >> .env_worker
+    - echo "FB_SERVICE=http://fb-adapter:8081" >> .env_worker
+    - echo "VK_SERVICE=http://vk-adapter:8082" >> .env_worker
+    - echo "BSTAT_SERVICE=http://bstat:8884" >> .env_worker
+    - docker stack deploy -c docker-compose.yaml socshared

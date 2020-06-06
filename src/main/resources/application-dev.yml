@@ -1,15 +1,21 @@
 spring:
-  datasource:
-    url: jdbc:postgresql://postgres-db:5432/name_db
-    driver-class-name: org.postgresql.Driver
-    username: ${POSTGRES_USER}
-    password: ${POSTGRES_PASSWORD}
-  jpa:
-    hibernate:
-      ddl-auto: create-drop
   zipkin:
     base-url: http://zipkin:9411/
     service:
       name: ${spring.application.name}
   main:
     allow-bean-definition-overriding: true
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: auditevents, beans, caches, conditions, configprops, health, httptrace, info, loggers, metrics, mappings, shutdown
+
+feign:
+  url:
+    auth: ${AUTH_SERVICE:https://auth.socshared.ml}
+    storage: ${STORAGE_SERVICE:https://storage.socshared.ml}
+    fb: ${FB_SERVICE:https://fb.socshared.ml}
+    vk: ${VK_SERVICE:https://vk.socshared.ml}
+    bstat: ${BSTAT_SERVICE:https://bstat.socshared.ml}

@@ -1,10 +1,13 @@
 server:
-  port: 8080
+  port: 8787
   error:
     whitelabel:
       enabled: false
 spring:
   application:
-    name: socshared-microservice-template
+    name: socshared-service-worker
   profiles:
     active: ${SPRING_PROFILE:local}
+
+jwt:
+  secret: ${SECRET_JWT_KEY:d282dc035756736e54761761cc52bef78e3c473fa7de8f617c14f0e0ae7044aae8ba4b7bed7d532d4af91122e50b39a8bb99e320f72094547d7cae108e928460}

@@ -1,14 +1,21 @@
 spring:
-  datasource:
-    url: jdbc:h2:mem:facebook_db?useUnicode=yes&characterEncoding=UTF-8
-    driver-class-name: org.h2.Driver
-    username: sa
-  jpa:
-    hibernate:
-      ddl-auto: update
   zipkin:
     base-url: https://zipkin.socshared.ml/
     service:
       name: ${spring.application.name}
   main:
     allow-bean-definition-overriding: true
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: auditevents, beans, caches, conditions, configprops, health, httptrace, info, loggers, metrics, mappings, shutdown
+
+feign:
+  url:
+    auth: ${AUTH_SERVICE:https://auth.socshared.ml}
+    storage: ${STORAGE_SERVICE:https://storage.socshared.ml}
+    fb: ${FB_SERVICE:https://fb.socshared.ml}
+    vk: ${VK_SERVICE:https://vk.socshared.ml}
+    bstat: ${BSTAT_SERVICE:https://bstat.socshared.ml}
