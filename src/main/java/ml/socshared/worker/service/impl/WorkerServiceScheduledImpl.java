@@ -29,10 +29,7 @@ import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-import java.util.UUID;
+import java.util.*;
 
 @Service
 @RequiredArgsConstructor
@@ -48,7 +45,8 @@ public class WorkerServiceScheduledImpl implements WorkerServiceScheduled {
     @Scheduled(fixedDelay = 100000)
     public void startPost() throws IOException {
         RestResponsePage<PublicationResponse> notPublishing = storageService.findNotPublishingAndReadyForPublishing();
-        List<PublicationResponse> publicationResponseList = notPublishing.getContent();
+        Set<PublicationResponse> publicationResponseList = new LinkedHashSet<>(notPublishing.getContent());
+        log.info("batch size publiction -> {}", publicationResponseList.size());
         ObjectMapper objectMapper = new ObjectMapper();
         objectMapper.registerModule(new JavaTimeModule());
         for (PublicationResponse response : publicationResponseList) {
