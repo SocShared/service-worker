@@ -43,7 +43,7 @@ public class WorkerServiceScheduledImpl implements WorkerServiceScheduled {
 
     private final RabbitTemplate rabbitTemplate;
 
-    @Scheduled(fixedDelay = 300000)
+    @Scheduled(fixedDelay = 100000)
     public void startPost() throws IOException {
         RestResponsePage<PublicationResponse> notPublishing = storageService.findNotPublishingAndReadyForPublishing();
         List<PublicationResponse> publicationResponseList = notPublishing.getContent();
