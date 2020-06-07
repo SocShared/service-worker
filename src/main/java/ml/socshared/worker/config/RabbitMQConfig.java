@@ -1,5 +1,6 @@
 package ml.socshared.worker.config;
 
+import lombok.extern.slf4j.Slf4j;
 import ml.socshared.worker.exception.AbstractRestHandleableException;
 import org.springframework.amqp.core.Binding;
 import org.springframework.amqp.core.BindingBuilder;
@@ -31,11 +32,6 @@ public class RabbitMQConfig {
     public final static String QUEUE_PUBLICATION_NAME = "socshared-publications-queue";
     public final static String EXCHANGE_NAME = "socshared-publication";
     public final static String ROUTING_KEY = "12345";
-
-    @Bean
-    public RabbitTemplate rabbitTemplate(final ConnectionFactory connectionFactory) {
-        return new RabbitTemplate(connectionFactory);
-    }
 
     @Bean
     public TopicExchange appExchange() {
@@ -73,11 +69,17 @@ public class RabbitMQConfig {
         return new CustomFatalExceptionStrategy();
     }
 
+    @Slf4j
     public static class CustomFatalExceptionStrategy
             extends ConditionalRejectingErrorHandler.DefaultExceptionStrategy {
+
         @Override
         public boolean isFatal(Throwable t) {
-            return (t.getCause() instanceof IOException || t.getCause() instanceof AbstractRestHandleableException);
+            if (t instanceof IOException || t instanceof AbstractRestHandleableException) {
+                log.info(t.getMessage());
+                return true;
+            }
+            return super.isFatal(t);
         }
     }
 }
