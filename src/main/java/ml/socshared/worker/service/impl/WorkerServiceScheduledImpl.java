@@ -79,59 +79,60 @@ public class WorkerServiceScheduledImpl implements WorkerServiceScheduled {
             Thread.sleep(10000);
         } catch (InterruptedException ignore) { }
 
-        log.info("Received message as publication: {}", message);
-
         PublicationRequest request = objectMapper.readValue(message, PublicationRequest.class);
+        log.info("Received message as publication: {}", request);
 
-        for (String group : request.getGroupIds()) {
-            GroupResponse groupResponse = storageService.getGroup(UUID.fromString(group));
-            try {
-                switch (groupResponse.getSocialNetwork()) {
-                    case VK:
-                        VkPostResponse vkPostResponse = saveVkPost(groupResponse, request);
-                        log.info("vk post -> " + vkPostResponse);
-                        PublicationRequest resultVk = new PublicationRequest();
-                        resultVk.setType(request.getType());
-                        resultVk.setPublicationId(request.getPublicationId());
-                        resultVk.setText(request.getText());
-                        resultVk.setPostStatus(GroupPostStatus.PostStatus.PUBLISHED);
-                        resultVk.setGroupIds(new String[]{group});
-                        resultVk.setUserId(request.getUserId());
-                        resultVk.setPublicationDateTime(new Date());
-                        storageService.savePublication(resultVk);
-                        break;
-                    case FACEBOOK:
-                        FacebookPostResponse facebookPostResponse = saveFbPost(groupResponse, request);
-                        log.info("fb post -> " + facebookPostResponse);
-                        PublicationRequest resultFb = new PublicationRequest();
-                        resultFb.setType(request.getType());
-                        resultFb.setPublicationId(request.getPublicationId());
-                        resultFb.setText(request.getText());
-                        resultFb.setPostStatus(GroupPostStatus.PostStatus.PUBLISHED);
-                        resultFb.setGroupIds(new String[]{group});
-                        resultFb.setUserId(request.getUserId());
-                        resultFb.setPublicationDateTime(new Date());
-                        storageService.savePublication(resultFb);
-                        break;
-                }
-            } catch (Exception exc) {
-                log.error(exc.getMessage());
-                PublicationRequest result = new PublicationRequest();
-                result.setType(request.getType());
-                result.setPublicationId(request.getPublicationId());
-                result.setText(request.getText());
-                result.setPostStatus(GroupPostStatus.PostStatus.NOT_SUCCESSFUL);
-                result.setGroupIds(new String[]{group});
-                result.setUserId(request.getUserId());
-                result.setPublicationDateTime(new Date());
-                storageService.savePublication(result);
-            }
-        }
+//        for (String group : request.getGroupIds()) {
+//            GroupResponse groupResponse = storageService.getGroup(UUID.fromString(group));
+//            try {
+//                switch (groupResponse.getSocialNetwork()) {
+//                    case VK:
+//                        VkPostResponse vkPostResponse = saveVkPost(groupResponse, request);
+//                        log.info("vk post -> " + vkPostResponse);
+//                        PublicationRequest resultVk = new PublicationRequest();
+//                        resultVk.setType(request.getType());
+//                        resultVk.setPublicationId(request.getPublicationId());
+//                        resultVk.setText(request.getText());
+//                        resultVk.setPostStatus(GroupPostStatus.PostStatus.PUBLISHED);
+//                        resultVk.setGroupIds(new String[]{group});
+//                        resultVk.setUserId(request.getUserId());
+//                        resultVk.setPublicationDateTime(new Date());
+//                        storageService.savePublication(resultVk);
+//                        break;
+//                    case FACEBOOK:
+//                        FacebookPostResponse facebookPostResponse = saveFbPost(groupResponse, request);
+//                        log.info("fb post -> " + facebookPostResponse);
+//                        PublicationRequest resultFb = new PublicationRequest();
+//                        resultFb.setType(request.getType());
+//                        resultFb.setPublicationId(request.getPublicationId());
+//                        resultFb.setText(request.getText());
+//                        resultFb.setPostStatus(GroupPostStatus.PostStatus.PUBLISHED);
+//                        resultFb.setGroupIds(new String[]{group});
+//                        resultFb.setUserId(request.getUserId());
+//                        resultFb.setPublicationDateTime(new Date());
+//                        storageService.savePublication(resultFb);
+//                        break;
+//                }
+//            } catch (Exception exc) {
+//                log.error(exc.getMessage());
+//                PublicationRequest result = new PublicationRequest();
+//                result.setType(request.getType());
+//                result.setPublicationId(request.getPublicationId());
+//                result.setText(request.getText());
+//                result.setPostStatus(GroupPostStatus.PostStatus.NOT_SUCCESSFUL);
+//                result.setGroupIds(new String[]{group});
+//                result.setUserId(request.getUserId());
+//                result.setPublicationDateTime(new Date());
+//                storageService.savePublication(result);
+//            }
+//        }
     }
 
     private VkPostResponse saveVkPost(GroupResponse groupResponse, PublicationRequest request) {
         VkPostRequest reqVk = new VkPostRequest();
         reqVk.setMessage(request.getText());
+
+        log.info("request vk -> {} to group -> {}", request, groupResponse);
 
         return vkService.savePost(UUID.fromString(request.getUserId()), groupResponse.getVkId(), reqVk);
     }
@@ -139,6 +140,8 @@ public class WorkerServiceScheduledImpl implements WorkerServiceScheduled {
     private FacebookPostResponse saveFbPost(GroupResponse groupResponse, PublicationRequest request) {
         FacebookPostRequest reqFb = new FacebookPostRequest();
         reqFb.setMessage(request.getText());
+
+        log.info("request fb -> {} to group -> {}", request, groupResponse);
 
         return facebookService.savePost(UUID.fromString(request.getUserId()), groupResponse.getFacebookId(), reqFb);
     }
