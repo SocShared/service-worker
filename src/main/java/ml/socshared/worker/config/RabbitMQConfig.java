@@ -1,5 +1,6 @@
 package ml.socshared.worker.config;
 
+import feign.FeignException;
 import lombok.extern.slf4j.Slf4j;
 import ml.socshared.worker.exception.AbstractRestHandleableException;
 import org.springframework.amqp.core.Binding;
@@ -74,7 +75,7 @@ public class RabbitMQConfig {
 
         @Override
         public boolean isFatal(Throwable t) {
-            if (t instanceof IOException || t instanceof AbstractRestHandleableException) {
+            if (t instanceof IOException || t instanceof AbstractRestHandleableException || t instanceof FeignException) {
                 log.info(t.getMessage());
                 return true;
             }
