@@ -68,7 +68,7 @@ public class WorkerServiceScheduledImpl implements WorkerServiceScheduled {
             result.setGroupIds(groupIds.toArray(String[]::new));
             result.setUserId(request.getUserId());
             storageService.savePublication(result);
-            String serialize = objectMapper.writeValueAsString(request);
+            String serialize = objectMapper.writeValueAsString(result);
             rabbitTemplate.convertAndSend(RabbitMQConfig.EXCHANGE_NAME, RabbitMQConfig.ROUTING_KEY, serialize);
         }
     }
