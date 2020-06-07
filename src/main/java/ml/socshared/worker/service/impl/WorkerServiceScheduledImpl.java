@@ -82,6 +82,10 @@ public class WorkerServiceScheduledImpl implements WorkerServiceScheduled {
         PublicationRequest request = objectMapper.readValue(message, PublicationRequest.class);
         log.info("Received message as publication: {}", request);
 
+        for (String groupId : request.getGroupIds()) {
+            GroupResponse groupResponse = storageService.getGroup(UUID.fromString(groupId));
+            log.info("GroupResponse -> {}", groupResponse);
+        }
 //        for (String group : request.getGroupIds()) {
 //            GroupResponse groupResponse = storageService.getGroup(UUID.fromString(group));
 //            try {
