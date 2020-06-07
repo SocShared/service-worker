@@ -70,6 +70,10 @@ public class WorkerServiceScheduledImpl implements WorkerServiceScheduled {
 
     @RabbitListener(queues = RabbitMQConfig.QUEUE_PUBLICATION_NAME)
     public void receiveMessage(PublicationRequest request) {
+        try {
+            Thread.sleep(10000);
+        } catch (InterruptedException ignore) { }
+
         log.info("Received message as publication: {}", request.toString());
         for (String group : request.getGroupIds()) {
             GroupResponse groupResponse = storageService.getGroup(UUID.fromString(group));
