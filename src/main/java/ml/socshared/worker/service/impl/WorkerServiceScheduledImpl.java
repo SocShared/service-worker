@@ -1,6 +1,7 @@
 package ml.socshared.worker.service.impl;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import feign.FeignException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -42,15 +43,14 @@ public class WorkerServiceScheduledImpl implements WorkerServiceScheduled {
     private final FacebookService facebookService;
     private final VkService vkService;
 
-    private final ObjectMapper objectMapper = new ObjectMapper();
-
     private final RabbitTemplate rabbitTemplate;
 
     @Scheduled(fixedDelay = 100000)
     public void startPost() throws IOException {
         RestResponsePage<PublicationResponse> notPublishing = storageService.findNotPublishingAndReadyForPublishing();
         List<PublicationResponse> publicationResponseList = notPublishing.getContent();
-
+        ObjectMapper objectMapper = new ObjectMapper();
+        objectMapper.registerModule(new JavaTimeModule());
         for (PublicationResponse response : publicationResponseList) {
             PublicationRequest request = new PublicationRequest();
             request.setText(response.getText());
@@ -83,6 +83,8 @@ public class WorkerServiceScheduledImpl implements WorkerServiceScheduled {
             Thread.sleep(10000);
         } catch (InterruptedException ignore) {
         }
+        ObjectMapper objectMapper = new ObjectMapper();
+        objectMapper.registerModule(new JavaTimeModule());
 
         PublicationResponse response = objectMapper.readValue(message, PublicationResponse.class);
         log.info("Received message as publication: {}", response);
