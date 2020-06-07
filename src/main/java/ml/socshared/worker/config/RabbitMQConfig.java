@@ -20,15 +20,13 @@ import org.springframework.context.annotation.Configuration;
 @RequiredArgsConstructor
 public class RabbitMQConfig {
 
-    public final static String QUEUE_PUBLICATION_NAME = "publications-queue";
-    public final static String EXCHANGE_NAME = "publication";
+    public final static String QUEUE_PUBLICATION_NAME = "socshared-publications-queue";
+    public final static String EXCHANGE_NAME = "socshared-publication";
     public final static String ROUTING_KEY = "12345";
 
     @Bean
     public RabbitTemplate rabbitTemplate(final ConnectionFactory connectionFactory) {
-        final var rabbitTemplate = new RabbitTemplate(connectionFactory);
-        rabbitTemplate.setMessageConverter(producerJackson2MessageConverter());
-        return rabbitTemplate;
+        return new RabbitTemplate(connectionFactory);
     }
 
     @Bean
@@ -44,11 +42,6 @@ public class RabbitMQConfig {
     @Bean
     public Binding declareBindingPublication() {
         return BindingBuilder.bind(appQueuePublication()).to(appExchange()).with(ROUTING_KEY);
-    }
-
-    @Bean
-    public Jackson2JsonMessageConverter producerJackson2MessageConverter() {
-        return new Jackson2JsonMessageConverter();
     }
 
 }

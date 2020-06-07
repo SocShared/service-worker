@@ -1,5 +1,6 @@
 package ml.socshared.worker.service.impl;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import ml.socshared.worker.client.StorageClient;
@@ -23,6 +24,7 @@ import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -37,10 +39,12 @@ public class WorkerServiceScheduledImpl implements WorkerServiceScheduled {
     private final FacebookService facebookService;
     private final VkService vkService;
 
+    private final ObjectMapper objectMapper = new ObjectMapper();
+
     private final RabbitTemplate rabbitTemplate;
 
     @Scheduled(fixedDelay = 300000)
-    public void startPost() {
+    public void startPost() throws IOException {
         RestResponsePage<PublicationResponse> notPublishing = storageService.findNotPublishingAndReadyForPublishing();
         List<PublicationResponse> publicationResponseList = notPublishing.getContent();
 
@@ -64,17 +68,21 @@ public class WorkerServiceScheduledImpl implements WorkerServiceScheduled {
             result.setGroupIds(groupIds.toArray(String[]::new));
             result.setUserId(request.getUserId());
             storageService.savePublication(result);
-            rabbitTemplate.convertAndSend(RabbitMQConfig.EXCHANGE_NAME, RabbitMQConfig.ROUTING_KEY, request);
+            String serialize = objectMapper.writeValueAsString(request);
+            rabbitTemplate.convertAndSend(RabbitMQConfig.EXCHANGE_NAME, RabbitMQConfig.ROUTING_KEY, serialize);
         }
     }
 
     @RabbitListener(queues = RabbitMQConfig.QUEUE_PUBLICATION_NAME)
-    public void receiveMessage(PublicationRequest request) {
+    public void receiveMessage(String message) throws IOException {
         try {
             Thread.sleep(10000);
         } catch (InterruptedException ignore) { }
 
-        log.info("Received message as publication: {}", request.toString());
+        log.info("Received message as publication: {}", message);
+
+        PublicationRequest request = objectMapper.readValue(message, PublicationRequest.class);
+
         for (String group : request.getGroupIds()) {
             GroupResponse groupResponse = storageService.getGroup(UUID.fromString(group));
             try {
