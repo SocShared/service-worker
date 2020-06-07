@@ -14,6 +14,8 @@ import ml.socshared.worker.domain.storage.response.GroupResponse;
 import ml.socshared.worker.domain.storage.response.PublicationResponse;
 import ml.socshared.worker.domain.vk.request.VkPostRequest;
 import ml.socshared.worker.domain.vk.response.VkPostResponse;
+import ml.socshared.worker.exception.AbstractRestHandleableException;
+import ml.socshared.worker.exception.impl.HttpBadRequestException;
 import ml.socshared.worker.service.FacebookService;
 import ml.socshared.worker.service.StorageService;
 import ml.socshared.worker.service.VkService;
@@ -77,7 +79,8 @@ public class WorkerServiceScheduledImpl implements WorkerServiceScheduled {
     public void receiveMessage(String message) throws IOException {
         try {
             Thread.sleep(10000);
-        } catch (InterruptedException ignore) { }
+        } catch (InterruptedException ignore) {
+        }
 
         PublicationRequest request = objectMapper.readValue(message, PublicationRequest.class);
         log.info("Received message as publication: {}", request);
@@ -85,51 +88,48 @@ public class WorkerServiceScheduledImpl implements WorkerServiceScheduled {
         for (String groupId : request.getGroupIds()) {
             GroupResponse groupResponse = storageService.getGroup(UUID.fromString(groupId));
             log.info("GroupResponse -> {}", groupResponse);
+            try {
+                switch (groupResponse.getSocialNetwork()) {
+                    case VK:
+                        VkPostResponse vkPostResponse = saveVkPost(groupResponse, request);
+                        log.info("vk post -> " + vkPostResponse);
+                        PublicationRequest resultVk = new PublicationRequest();
+                        resultVk.setType(request.getType());
+                        resultVk.setPublicationId(request.getPublicationId());
+                        resultVk.setText(request.getText());
+                        resultVk.setPostStatus(GroupPostStatus.PostStatus.PUBLISHED);
+                        resultVk.setGroupIds(new String[]{groupId});
+                        resultVk.setUserId(request.getUserId());
+                        resultVk.setPublicationDateTime(new Date());
+                        storageService.savePublication(resultVk);
+                        break;
+                    case FACEBOOK:
+                        FacebookPostResponse facebookPostResponse = saveFbPost(groupResponse, request);
+                        log.info("fb post -> " + facebookPostResponse);
+                        PublicationRequest resultFb = new PublicationRequest();
+                        resultFb.setType(request.getType());
+                        resultFb.setPublicationId(request.getPublicationId());
+                        resultFb.setText(request.getText());
+                        resultFb.setPostStatus(GroupPostStatus.PostStatus.PUBLISHED);
+                        resultFb.setGroupIds(new String[]{groupId});
+                        resultFb.setUserId(request.getUserId());
+                        resultFb.setPublicationDateTime(new Date());
+                        storageService.savePublication(resultFb);
+                        break;
+                }
+            } catch (AbstractRestHandleableException exc) {
+                log.error(exc.getMessage());
+                PublicationRequest result = new PublicationRequest();
+                result.setType(request.getType());
+                result.setPublicationId(request.getPublicationId());
+                result.setText(request.getText());
+                result.setPostStatus(GroupPostStatus.PostStatus.NOT_SUCCESSFUL);
+                result.setGroupIds(new String[]{groupId});
+                result.setUserId(request.getUserId());
+                result.setPublicationDateTime(new Date());
+                storageService.savePublication(result);
+            }
         }
-//        for (String group : request.getGroupIds()) {
-//            GroupResponse groupResponse = storageService.getGroup(UUID.fromString(group));
-//            try {
-//                switch (groupResponse.getSocialNetwork()) {
-//                    case VK:
-//                        VkPostResponse vkPostResponse = saveVkPost(groupResponse, request);
-//                        log.info("vk post -> " + vkPostResponse);
-//                        PublicationRequest resultVk = new PublicationRequest();
-//                        resultVk.setType(request.getType());
-//                        resultVk.setPublicationId(request.getPublicationId());
-//                        resultVk.setText(request.getText());
-//                        resultVk.setPostStatus(GroupPostStatus.PostStatus.PUBLISHED);
-//                        resultVk.setGroupIds(new String[]{group});
-//                        resultVk.setUserId(request.getUserId());
-//                        resultVk.setPublicationDateTime(new Date());
-//                        storageService.savePublication(resultVk);
-//                        break;
-//                    case FACEBOOK:
-//                        FacebookPostResponse facebookPostResponse = saveFbPost(groupResponse, request);
-//                        log.info("fb post -> " + facebookPostResponse);
-//                        PublicationRequest resultFb = new PublicationRequest();
-//                        resultFb.setType(request.getType());
-//                        resultFb.setPublicationId(request.getPublicationId());
-//                        resultFb.setText(request.getText());
-//                        resultFb.setPostStatus(GroupPostStatus.PostStatus.PUBLISHED);
-//                        resultFb.setGroupIds(new String[]{group});
-//                        resultFb.setUserId(request.getUserId());
-//                        resultFb.setPublicationDateTime(new Date());
-//                        storageService.savePublication(resultFb);
-//                        break;
-//                }
-//            } catch (Exception exc) {
-//                log.error(exc.getMessage());
-//                PublicationRequest result = new PublicationRequest();
-//                result.setType(request.getType());
-//                result.setPublicationId(request.getPublicationId());
-//                result.setText(request.getText());
-//                result.setPostStatus(GroupPostStatus.PostStatus.NOT_SUCCESSFUL);
-//                result.setGroupIds(new String[]{group});
-//                result.setUserId(request.getUserId());
-//                result.setPublicationDateTime(new Date());
-//                storageService.savePublication(result);
-//            }
-//        }
     }
 
     private VkPostResponse saveVkPost(GroupResponse groupResponse, PublicationRequest request) {

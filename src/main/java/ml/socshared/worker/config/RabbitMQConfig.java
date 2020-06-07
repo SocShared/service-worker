@@ -1,20 +1,28 @@
 package ml.socshared.worker.config;
 
+import ml.socshared.worker.exception.AbstractRestHandleableException;
 import org.springframework.amqp.core.Binding;
 import org.springframework.amqp.core.BindingBuilder;
 import org.springframework.amqp.core.Queue;
 import org.springframework.amqp.core.TopicExchange;
+import org.springframework.amqp.rabbit.config.SimpleRabbitListenerContainerFactory;
 import org.springframework.amqp.rabbit.connection.CachingConnectionFactory;
 import org.springframework.amqp.rabbit.connection.ConnectionFactory;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
+import org.springframework.amqp.rabbit.listener.ConditionalRejectingErrorHandler;
+import org.springframework.amqp.rabbit.listener.FatalExceptionStrategy;
 import org.springframework.amqp.rabbit.listener.SimpleMessageListenerContainer;
 import org.springframework.amqp.rabbit.listener.adapter.MessageListenerAdapter;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.amqp.support.converter.Jackson2JsonMessageConverter;
+import org.springframework.boot.autoconfigure.amqp.SimpleRabbitListenerContainerFactoryConfigurer;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.util.ErrorHandler;
+
+import java.io.IOException;
 
 @Configuration
 @RequiredArgsConstructor
@@ -44,4 +52,32 @@ public class RabbitMQConfig {
         return BindingBuilder.bind(appQueuePublication()).to(appExchange()).with(ROUTING_KEY);
     }
 
+    @Bean
+    public SimpleRabbitListenerContainerFactory rabbitListenerContainerFactory(
+            ConnectionFactory connectionFactory,
+            SimpleRabbitListenerContainerFactoryConfigurer configurer) {
+        SimpleRabbitListenerContainerFactory factory =
+                new SimpleRabbitListenerContainerFactory();
+        configurer.configure(factory, connectionFactory);
+        factory.setErrorHandler(errorHandler());
+        return factory;
+    }
+
+    @Bean
+    public ErrorHandler errorHandler() {
+        return new ConditionalRejectingErrorHandler(customExceptionStrategy());
+    }
+
+    @Bean
+    FatalExceptionStrategy customExceptionStrategy() {
+        return new CustomFatalExceptionStrategy();
+    }
+
+    public static class CustomFatalExceptionStrategy
+            extends ConditionalRejectingErrorHandler.DefaultExceptionStrategy {
+        @Override
+        public boolean isFatal(Throwable t) {
+            return (t.getCause() instanceof IOException || t.getCause() instanceof AbstractRestHandleableException);
+        }
+    }
 }

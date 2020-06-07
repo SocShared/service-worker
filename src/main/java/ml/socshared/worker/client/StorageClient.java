@@ -14,7 +14,7 @@ import javax.validation.constraints.Min;
 import javax.validation.constraints.NotNull;
 import java.util.UUID;
 
-@FeignClient(name = "vk-adapter", url = "${feign.url.storage:}")
+@FeignClient(name = "storage-adapter", url = "${feign.url.storage:}")
 public interface StorageClient {
 
     @PostMapping(value = "/api/v1/private/publications", consumes = MediaType.APPLICATION_JSON_VALUE,
