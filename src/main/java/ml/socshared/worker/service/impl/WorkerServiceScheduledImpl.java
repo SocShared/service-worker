@@ -1,6 +1,7 @@
 package ml.socshared.worker.service.impl;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import feign.FeignException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import ml.socshared.worker.client.StorageClient;
@@ -117,7 +118,7 @@ public class WorkerServiceScheduledImpl implements WorkerServiceScheduled {
                         storageService.savePublication(resultFb);
                         break;
                 }
-            } catch (AbstractRestHandleableException exc) {
+            } catch (AbstractRestHandleableException | FeignException exc) {
                 log.error(exc.getMessage());
                 PublicationRequest result = new PublicationRequest();
                 result.setType(request.getType());
