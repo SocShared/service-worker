@@ -78,10 +78,6 @@ public class WorkerServiceScheduledImpl implements WorkerServiceScheduled {
 
     @RabbitListener(queues = RabbitMQConfig.QUEUE_PUBLICATION_NAME)
     public void receiveMessage(String message) throws IOException {
-        try {
-            Thread.sleep(10000);
-        } catch (InterruptedException ignore) {
-        }
         ObjectMapper objectMapper = new ObjectMapper();
         objectMapper.registerModule(new JavaTimeModule());
 
