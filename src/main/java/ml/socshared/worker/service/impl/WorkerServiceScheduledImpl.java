@@ -45,7 +45,7 @@ public class WorkerServiceScheduledImpl implements WorkerServiceScheduled {
     @Scheduled(fixedDelay = 100000)
     public void startPost() throws IOException {
         RestResponsePage<PublicationResponse> notPublishing = storageService.findNotPublishingAndReadyForPublishing();
-        Set<PublicationResponse> publicationResponseList = new LinkedHashSet<>(notPublishing.getContent());
+        List<PublicationResponse> publicationResponseList = notPublishing.getContent();
         log.info("batch size publiction -> {}", publicationResponseList.size());
         ObjectMapper objectMapper = new ObjectMapper();
         objectMapper.registerModule(new JavaTimeModule());
