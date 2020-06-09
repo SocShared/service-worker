@@ -122,9 +122,9 @@ public class WorkerServiceScheduledImpl implements WorkerServiceScheduled {
                     }
                 }
             } catch (AbstractRestHandleableException | RetryableException exc) {
-                String mes = exc.getMessage();
+                String mes = "Connection refused: " + exc.getMessage();
                 if (exc instanceof AbstractRestHandleableException) {
-                    Map<String, Object> mapError = objectMapper.readValue(mes, HashMap.class);
+                    Map<String, Object> mapError = objectMapper.readValue(exc.getMessage(), HashMap.class);
                     mes = (String) mapError.get("message");
                 }
                 log.error(exc.getMessage());
