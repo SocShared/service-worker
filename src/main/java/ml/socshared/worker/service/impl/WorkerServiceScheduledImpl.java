@@ -91,18 +91,18 @@ public class WorkerServiceScheduledImpl implements WorkerServiceScheduled {
                 if (postStatus.getPostStatus() == GroupPostStatus.PostStatus.PROCESSING) {
                     switch (groupResponse.getSocialNetwork()) {
                         case VK:
-                            VkPostResponse vkPostResponse = saveVkPost(groupResponse, response.getUserId(), response.getText());
-                            log.info("vk post -> " + vkPostResponse);
-                            PublicationRequest resultVk = new PublicationRequest();
-                            resultVk.setType(response.getPostType());
-                            resultVk.setPublicationId(response.getPublicationId().toString());
-                            resultVk.setText(response.getText());
-                            resultVk.setStatusText("Успешно опубликована");
-                            resultVk.setPostStatus(GroupPostStatus.PostStatus.PUBLISHED);
-                            resultVk.setGroupIds(new String[]{groupResponse.getGroupId()});
-                            resultVk.setUserId(response.getUserId().toString());
-                            resultVk.setPublicationDateTime(new Date());
-                            storageService.savePublication(resultVk);
+//                            VkPostResponse vkPostResponse = saveVkPost(groupResponse, response.getUserId(), response.getText());
+//                            log.info("vk post -> " + vkPostResponse);
+//                            PublicationRequest resultVk = new PublicationRequest();
+//                            resultVk.setType(response.getPostType());
+//                            resultVk.setPublicationId(response.getPublicationId().toString());
+//                            resultVk.setText(response.getText());
+//                            resultVk.setStatusText("Успешно опубликована");
+//                            resultVk.setPostStatus(GroupPostStatus.PostStatus.PUBLISHED);
+//                            resultVk.setGroupIds(new String[]{groupResponse.getGroupId()});
+//                            resultVk.setUserId(response.getUserId().toString());
+//                            resultVk.setPublicationDateTime(new Date());
+//                            storageService.savePublication(resultVk);
                             break;
                         case FACEBOOK:
                             FacebookPostResponse facebookPostResponse = saveFbPost(groupResponse, response.getUserId(), response.getText());
@@ -120,13 +120,16 @@ public class WorkerServiceScheduledImpl implements WorkerServiceScheduled {
                             break;
                     }
                 }
-            } catch (Exception exc) {
+            } catch (AbstractRestHandleableException exc) {
+                Map<String, Object> mapError = objectMapper.readValue(exc.getMessage(), HashMap.class);
+                String mes = (String) mapError.get("message");
+
                 log.error(exc.getMessage());
                 PublicationRequest result = new PublicationRequest();
                 result.setType(response.getPostType());
                 result.setPublicationId(response.getPublicationId().toString());
                 result.setText(response.getText());
-                result.setStatusText(exc.getMessage());
+                result.setStatusText(mes);
                 result.setPostStatus(GroupPostStatus.PostStatus.NOT_SUCCESSFUL);
                 result.setGroupIds(new String[]{groupResponse.getGroupId()});
                 result.setUserId(response.getUserId().toString());

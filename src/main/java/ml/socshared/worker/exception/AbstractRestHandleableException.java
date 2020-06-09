@@ -22,4 +22,5 @@ public abstract class AbstractRestHandleableException extends RuntimeException i
         super(throwable);
         this.httpStatus = httpStatus;
     }
+
 }
