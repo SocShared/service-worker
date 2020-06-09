@@ -16,6 +16,7 @@ public class GroupPostStatus {
 
     private UUID groupId;
     private PostStatus postStatus;
+    private String statusText;
 
     public enum PostStatus {
         @JsonProperty("published")

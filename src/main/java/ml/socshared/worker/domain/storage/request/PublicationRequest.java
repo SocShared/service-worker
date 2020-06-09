@@ -19,6 +19,7 @@ public class PublicationRequest {
 
     private String publicationId;
     private GroupPostStatus.PostStatus postStatus;
+    private String statusText;
     private Date publicationDateTime;
     @NotEmpty
     private String userId;
