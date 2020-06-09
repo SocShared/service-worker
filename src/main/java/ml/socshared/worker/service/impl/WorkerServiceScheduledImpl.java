@@ -120,7 +120,7 @@ public class WorkerServiceScheduledImpl implements WorkerServiceScheduled {
                             break;
                     }
                 }
-            } catch (AbstractRestHandleableException exc) {
+            } catch (Exception exc) {
                 log.error(exc.getMessage());
                 PublicationRequest result = new PublicationRequest();
                 result.setType(response.getPostType());

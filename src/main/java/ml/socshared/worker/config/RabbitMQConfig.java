@@ -75,7 +75,7 @@ public class RabbitMQConfig {
 
         @Override
         public boolean isFatal(Throwable t) {
-            if (t instanceof IOException || t instanceof AbstractRestHandleableException) {
+            if (t instanceof Exception) {
                 log.info(t.getMessage());
                 return true;
             }
