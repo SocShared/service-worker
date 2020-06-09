@@ -75,8 +75,8 @@ public class RabbitMQConfig {
 
         @Override
         public boolean isFatal(Throwable t) {
-            if (t instanceof Exception) {
-                log.info(t.getMessage());
+            if (t instanceof IOException) {
+                log.error(t.getMessage());
                 return true;
             }
             return super.isFatal(t);
