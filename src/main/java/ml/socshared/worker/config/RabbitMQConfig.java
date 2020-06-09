@@ -105,8 +105,8 @@ public class RabbitMQConfig {
 
         @Override
         public boolean isFatal(Throwable t) {
-            if (t instanceof IOException || t instanceof AbstractRestHandleableException || t instanceof FeignException) {
-                log.info(t.getMessage());
+            if (t instanceof IOException) {
+                log.error(t.getMessage());
                 return true;
             }
             return super.isFatal(t);

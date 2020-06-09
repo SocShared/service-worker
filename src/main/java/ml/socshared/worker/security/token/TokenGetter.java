@@ -35,7 +35,7 @@ public class TokenGetter {
     }
 
     @Before("execution(* ml.socshared.worker.service.impl.FacebookServiceImpl.*(..))")
-    public TokenObject getTokenFB() {
+    public TokenObject initTokenFB() {
         if (tokenFB.getToken() != null && jwtTokenProvider.validateServiceToken(tokenFB.getToken())) {
             return tokenFB;
         }
@@ -50,7 +50,7 @@ public class TokenGetter {
         return tokenFB;
     }
     @Before("execution(* ml.socshared.worker.service.impl.VkServiceImpl.*(..))")
-    public TokenObject getTokenVK() {
+    public TokenObject initTokenVK() {
         if (tokenVK != null && jwtTokenProvider.validateServiceToken(tokenVK.getToken())) {
             return tokenVK;
         }
@@ -65,8 +65,9 @@ public class TokenGetter {
         return tokenVK;
     }
 
+
     @Before("execution(* ml.socshared.worker.service.impl.BStatServiceImpl.*(..))")
-    public TokenObject getTokenBSTAT() {
+    public TokenObject initTokenBSTAT() {
         if (tokenBSTAT != null && jwtTokenProvider.validateServiceToken(tokenBSTAT.getToken())) {
             return tokenBSTAT;
         }
@@ -82,7 +83,7 @@ public class TokenGetter {
     }
 
     @Before("execution(* ml.socshared.worker.service.impl.StorageServiceImpl.*(..))")
-    public TokenObject getTokenStorageService() {
+    public TokenObject initTokenStorageService() {
         if (tokenStorageService != null && jwtTokenProvider.validateServiceToken(tokenStorageService.getToken())) {
             return tokenStorageService;
         }
@@ -97,4 +98,19 @@ public class TokenGetter {
         return tokenStorageService;
     }
 
+    public TokenObject getTokenFB() {
+        return tokenFB;
+    }
+
+    public TokenObject getTokenVK() {
+        return tokenVK;
+    }
+
+    public TokenObject getTokenBSTAT() {
+        return tokenBSTAT;
+    }
+
+    public TokenObject getTokenStorageService() {
+        return tokenStorageService;
+    }
 }
