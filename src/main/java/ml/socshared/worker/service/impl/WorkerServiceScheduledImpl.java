@@ -122,9 +122,11 @@ public class WorkerServiceScheduledImpl implements WorkerServiceScheduled {
                     }
                 }
             } catch (AbstractRestHandleableException | RetryableException exc) {
-                Map<String, Object> mapError = objectMapper.readValue(exc.getMessage(), HashMap.class);
-                String mes = (String) mapError.get("message");
-
+                String mes = exc.getMessage();
+                if (exc instanceof AbstractRestHandleableException) {
+                    Map<String, Object> mapError = objectMapper.readValue(mes, HashMap.class);
+                    mes = (String) mapError.get("message");
+                }
                 log.error(exc.getMessage());
                 PublicationRequest result = new PublicationRequest();
                 result.setType(response.getPostType());
