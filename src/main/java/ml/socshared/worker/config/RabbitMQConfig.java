@@ -1,6 +1,7 @@
 package ml.socshared.worker.config;
 
 import feign.FeignException;
+import feign.RetryableException;
 import lombok.extern.slf4j.Slf4j;
 import ml.socshared.worker.exception.AbstractRestHandleableException;
 import org.springframework.amqp.core.Binding;

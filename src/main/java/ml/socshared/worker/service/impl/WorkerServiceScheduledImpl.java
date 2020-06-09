@@ -3,6 +3,7 @@ package ml.socshared.worker.service.impl;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import feign.FeignException;
+import feign.RetryableException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import ml.socshared.worker.client.StorageClient;
@@ -120,7 +121,7 @@ public class WorkerServiceScheduledImpl implements WorkerServiceScheduled {
                             break;
                     }
                 }
-            } catch (AbstractRestHandleableException exc) {
+            } catch (AbstractRestHandleableException | RetryableException exc) {
                 Map<String, Object> mapError = objectMapper.readValue(exc.getMessage(), HashMap.class);
                 String mes = (String) mapError.get("message");
 
