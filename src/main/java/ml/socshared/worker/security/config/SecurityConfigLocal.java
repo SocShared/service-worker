@@ -13,7 +13,7 @@ import static ml.socshared.worker.config.Constants.TEST_PROFILE;
 
 @Configuration
 @EnableWebSecurity
-@Profile({TEST_PROFILE, LOCAL_PROFILE})
+@Profile({TEST_PROFILE, LOCAL_PROFILE, "lexgv"})
 @Slf4j
 public class SecurityConfigLocal extends WebSecurityConfigurerAdapter {
 

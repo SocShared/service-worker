@@ -31,7 +31,11 @@ import java.io.IOException;
 public class RabbitMQConfig {
 
     public final static String QUEUE_PUBLICATION_NAME = "socshared-publications-queue";
+    public final static String QUEUE_BSTAT_REQUEST_NAME = "socshared-bstat-request-queue";
+    public final static String QUEUE_BSTAT_RESPONSE_NAME = "socshared-bstat-response-queue";
     public final static String EXCHANGE_NAME = "socshared-publication";
+    public final static String BSTAT_REQUEST_EXCHANGE_NAME = "socshared-bstat-request";
+    public final static String BSTAT_RESPONSE_EXCHANGE_NAME = "socshared-bstat-response";
     public final static String ROUTING_KEY = "12345";
 
     @Bean
@@ -40,13 +44,39 @@ public class RabbitMQConfig {
     }
 
     @Bean
+    public TopicExchange appExchangeBStatRequest() {
+        return new TopicExchange(BSTAT_REQUEST_EXCHANGE_NAME);
+    }
+
+    @Bean
+    public TopicExchange appExchangeBStatResponse() {
+        return new TopicExchange(BSTAT_RESPONSE_EXCHANGE_NAME);
+    }
+
+    @Bean
     public Queue appQueuePublication() {
         return new Queue(QUEUE_PUBLICATION_NAME);
     }
 
     @Bean
+    public Queue appQueueBStatRequest() { return new Queue(QUEUE_BSTAT_REQUEST_NAME); }
+
+    @Bean
+    public Queue appQueueBStatResponse() { return new Queue(QUEUE_BSTAT_RESPONSE_NAME); }
+
+    @Bean
     public Binding declareBindingPublication() {
         return BindingBuilder.bind(appQueuePublication()).to(appExchange()).with(ROUTING_KEY);
+    }
+
+    @Bean
+    public Binding declareBindingBStatRequest() {
+        return BindingBuilder.bind(appQueueBStatRequest()).to(appExchangeBStatRequest()).with(ROUTING_KEY);
+    }
+
+    @Bean
+    public Binding declareBindingBStatResponse() {
+        return BindingBuilder.bind(appQueueBStatResponse()).to(appExchangeBStatResponse()).with(ROUTING_KEY);
     }
 
     @Bean
