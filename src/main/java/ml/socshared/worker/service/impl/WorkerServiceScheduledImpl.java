@@ -118,7 +118,7 @@ public class WorkerServiceScheduledImpl implements WorkerServiceScheduled {
                             break;
                     }
                 }
-            } catch (AbstractRestHandleableException | FeignException exc) {
+            } catch (AbstractRestHandleableException exc) {
                 log.error(exc.getMessage());
                 PublicationRequest result = new PublicationRequest();
                 result.setType(response.getPostType());
