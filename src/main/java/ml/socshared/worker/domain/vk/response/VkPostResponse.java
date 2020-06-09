@@ -20,7 +20,7 @@ public class VkPostResponse {
     private Integer likesCount = 0;
     private Integer repostsCount = 0;
     private Integer viewsCount = 0;
-    private LocalDateTime createdDate;
-    private LocalDateTime updatedDate;
+   // private LocalDateTime createdDate;
+    //private LocalDateTime updatedDate;
 
 }
