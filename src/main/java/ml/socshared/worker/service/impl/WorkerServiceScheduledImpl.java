@@ -127,7 +127,7 @@ public class WorkerServiceScheduledImpl implements WorkerServiceScheduled {
                     Map<String, Object> mapError = objectMapper.readValue(exc.getMessage(), HashMap.class);
                     mes = (String) mapError.get("message");
                 }
-                log.error(exc.getMessage());
+                log.error(mes);
                 PublicationRequest result = new PublicationRequest();
                 result.setType(response.getPostType());
                 result.setPublicationId(response.getPublicationId().toString());
