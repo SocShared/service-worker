@@ -78,8 +78,8 @@ public class BStatServiceImpl implements BStatService {
                     response.setGroupId(target.getGroupId());
                     response.setPostId(target.getPostId());
                     response.setSystemUserId(target.getSystemUserId());
-                    response.setCommentsCount(response.getCommentsCount());
-                    response.setLikesCount(response.getLikesCount());
+                    response.setCommentsCount(vkResult.getCommentsCount());
+                    response.setLikesCount(vkResult.getLikesCount());
                     response.setRepostsCount(vkResult.getRepostsCount());
                     response.setViewsCount(vkResult.getViewsCount());
                     String serialize = objectMapper.writeValueAsString(response);
