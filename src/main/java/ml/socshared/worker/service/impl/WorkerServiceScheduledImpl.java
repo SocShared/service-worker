@@ -86,13 +86,11 @@ public class WorkerServiceScheduledImpl implements WorkerServiceScheduled {
         log.info("Received message as publication: {}", response);
 
         for (GroupPostStatus postStatus : response.getPostStatus()) {
-            GroupResponse groupResponse = storageService.getGroup(postStatus.getGroupId());
-            log.info("GroupResponse -> {}", groupResponse);
             try {
                 if (postStatus.getPostStatus() == GroupPostStatus.PostStatus.PROCESSING) {
-                    switch (groupResponse.getSocialNetwork()) {
+                    switch (postStatus.getSocialNetwork()) {
                         case VK:
-                            VkPostResponse vkPostResponse = saveVkPost(groupResponse, response.getUserId(), response.getText());
+                            VkPostResponse vkPostResponse = saveVkPost(response.getUserId(), postStatus.getGroupVkId(), response.getText());
                             log.info("vk post -> " + vkPostResponse);
                             PublicationRequest resultVk = new PublicationRequest();
                             resultVk.setType(response.getPostType());
@@ -100,13 +98,13 @@ public class WorkerServiceScheduledImpl implements WorkerServiceScheduled {
                             resultVk.setText(response.getText());
                             resultVk.setStatusText("Success");
                             resultVk.setPostStatus(GroupPostStatus.PostStatus.PUBLISHED);
-                            resultVk.setGroupIds(new String[]{groupResponse.getGroupId()});
+                            resultVk.setGroupIds(new String[]{postStatus.getGroupId().toString()});
                             resultVk.setUserId(response.getUserId().toString());
                             resultVk.setPublicationDateTime(new Date());
                             storageService.savePublication(resultVk);
                             break;
                         case FACEBOOK:
-                            FacebookPostResponse facebookPostResponse = saveFbPost(groupResponse, response.getUserId(), response.getText());
+                            FacebookPostResponse facebookPostResponse = saveFbPost(response.getUserId(), postStatus.getGroupFacebookId(), response.getText());
                             log.info("fb post -> " + facebookPostResponse);
                             PublicationRequest resultFb = new PublicationRequest();
                             resultFb.setType(response.getPostType());
@@ -114,7 +112,7 @@ public class WorkerServiceScheduledImpl implements WorkerServiceScheduled {
                             resultFb.setText(response.getText());
                             resultFb.setStatusText("Success");
                             resultFb.setPostStatus(GroupPostStatus.PostStatus.PUBLISHED);
-                            resultFb.setGroupIds(new String[]{groupResponse.getGroupId()});
+                            resultFb.setGroupIds(new String[]{postStatus.getGroupId().toString()});
                             resultFb.setUserId(response.getUserId().toString());
                             resultFb.setPublicationDateTime(new Date());
                             storageService.savePublication(resultFb);
@@ -134,7 +132,7 @@ public class WorkerServiceScheduledImpl implements WorkerServiceScheduled {
                 result.setText(response.getText());
                 result.setStatusText(mes);
                 result.setPostStatus(GroupPostStatus.PostStatus.NOT_SUCCESSFUL);
-                result.setGroupIds(new String[]{groupResponse.getGroupId()});
+                result.setGroupIds(new String[]{postStatus.getGroupId().toString()});
                 result.setUserId(response.getUserId().toString());
                 result.setPublicationDateTime(new Date());
                 storageService.savePublication(result);
@@ -142,21 +140,21 @@ public class WorkerServiceScheduledImpl implements WorkerServiceScheduled {
         }
     }
 
-    private VkPostResponse saveVkPost(GroupResponse groupResponse, UUID userId, String message) {
+    private VkPostResponse saveVkPost(UUID userId, String vkGroupId, String message) {
         VkPostRequest reqVk = new VkPostRequest();
         reqVk.setMessage(message);
 
-        log.info("message vk -> {} to group -> {}", message, groupResponse);
+        log.info("message vk -> {} to group -> {}", message, vkGroupId);
 
-        return vkService.savePost(userId, groupResponse.getVkId(), reqVk);
+        return vkService.savePost(userId, vkGroupId, reqVk);
     }
 
-    private FacebookPostResponse saveFbPost(GroupResponse groupResponse, UUID userId, String message) {
+    private FacebookPostResponse saveFbPost(UUID userId, String fbGroupId, String message) {
         FacebookPostRequest reqFb = new FacebookPostRequest();
         reqFb.setMessage(message);
 
-        log.info("message fb -> {} to group -> {}", message, groupResponse);
+        log.info("message fb -> {} to group -> {}", message, fbGroupId);
 
-        return facebookService.savePost(userId, groupResponse.getFacebookId(), reqFb);
+        return facebookService.savePost(userId, fbGroupId, reqFb);
     }
 }
