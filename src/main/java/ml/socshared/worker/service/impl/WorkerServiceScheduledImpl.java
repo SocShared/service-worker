@@ -100,6 +100,7 @@ public class WorkerServiceScheduledImpl implements WorkerServiceScheduled {
                             resultVk.setPostStatus(GroupPostStatus.PostStatus.PUBLISHED);
                             resultVk.setGroupIds(new String[]{postStatus.getGroupId().toString()});
                             resultVk.setUserId(response.getUserId().toString());
+                            resultVk.setPostVkId(vkPostResponse.getPostId());
                             resultVk.setPublicationDateTime(new Date());
                             storageService.savePublication(resultVk);
                             break;
@@ -114,6 +115,7 @@ public class WorkerServiceScheduledImpl implements WorkerServiceScheduled {
                             resultFb.setPostStatus(GroupPostStatus.PostStatus.PUBLISHED);
                             resultFb.setGroupIds(new String[]{postStatus.getGroupId().toString()});
                             resultFb.setUserId(response.getUserId().toString());
+                            resultFb.setPostFacebookId(facebookPostResponse.getPostId());
                             resultFb.setPublicationDateTime(new Date());
                             storageService.savePublication(resultFb);
                             break;
