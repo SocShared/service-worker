@@ -4,6 +4,7 @@ import feign.FeignException;
 import feign.RetryableException;
 import lombok.extern.slf4j.Slf4j;
 import ml.socshared.worker.exception.AbstractRestHandleableException;
+import ml.socshared.worker.service.sentry.SentryService;
 import org.springframework.amqp.core.Binding;
 import org.springframework.amqp.core.BindingBuilder;
 import org.springframework.amqp.core.Queue;
@@ -38,6 +39,8 @@ public class RabbitMQConfig {
     public final static String BSTAT_REQUEST_EXCHANGE_NAME = "socshared-bstat-request";
     public final static String BSTAT_RESPONSE_EXCHANGE_NAME = "socshared-bstat-response";
     public final static String ROUTING_KEY = "12345";
+
+    private final SentryService sentryService;
 
     @Bean
     public TopicExchange appExchange() {
@@ -97,19 +100,23 @@ public class RabbitMQConfig {
 
     @Bean
     FatalExceptionStrategy customExceptionStrategy() {
-        return new CustomFatalExceptionStrategy();
+        return new CustomFatalExceptionStrategy(sentryService);
     }
 
     @Slf4j
+    @RequiredArgsConstructor
     public static class CustomFatalExceptionStrategy
             extends ConditionalRejectingErrorHandler.DefaultExceptionStrategy {
 
+        private final SentryService sentryService;
+
         @Override
         public boolean isFatal(Throwable t) {
+            log.error(t.getMessage());
             if (t instanceof IOException) {
-                log.error(t.getMessage());
                 return true;
             }
+            sentryService.logException(t);
             return super.isFatal(t);
         }
     }
