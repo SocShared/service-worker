@@ -29,5 +29,7 @@ public class PublicationRequest {
     private PostType type;
     @NotNull
     private String text;
+    private String postFacebookId;
+    private String postVkId;
 
 }
