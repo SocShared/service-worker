@@ -18,6 +18,7 @@ import ml.socshared.worker.domain.vk.response.VkGroupResponse;
 import ml.socshared.worker.domain.vk.response.VkPostResponse;
 import ml.socshared.worker.security.model.TokenObject;
 import ml.socshared.worker.service.BStatService;
+import ml.socshared.worker.service.VkService;
 import org.springframework.amqp.rabbit.annotation.RabbitListener;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.factory.annotation.Value;
@@ -28,16 +29,7 @@ import org.springframework.stereotype.Service;
 @RequiredArgsConstructor
 public class BStatServiceImpl implements BStatService {
 
-    @Value("#{tokenGetter.tokenBSTAT}")
-    private TokenObject tokenBStat;
-    @Value("#{tokenGetter.tokenVK}")
-    private TokenObject tokenVk;
-    @Value("#{tokenGetter.tokenFB}")
-    private TokenObject tokenFb;
-
-
-    private final BstatClient client;
-    private final VKAdapterClient vkClient;
+    private final VkService vkService;
     private final RabbitTemplate rabbitTemplate;
 
     @Override
@@ -70,8 +62,8 @@ public class BStatServiceImpl implements BStatService {
             log.info("Request get statistics of vk");
             if(target.getType().equals(RabbitMqType.POST)) {
                 try {
-                    VkPostResponse vkResult = vkClient.getPostOfGroupById(target.getSystemUserId(),
-                            target.getGroupId(), target.getPostId(), authTokenVk());
+                    VkPostResponse vkResult = vkService.getPostOfGroupById(target.getSystemUserId(),
+                            target.getGroupId(), target.getPostId());
                     RabbitMqResponseAll response = new RabbitMqResponseAll();
                     response.setType(RabbitMqType.POST);
                     response.setSocialNetwork(SocialNetwork.VK);
@@ -91,8 +83,8 @@ public class BStatServiceImpl implements BStatService {
 
             } else {
                 try{
-                    VkGroupResponse group = vkClient.getGroupById(target.getSystemUserId(), target.getGroupId(), authTokenVk());
-                    Integer groupOnline = vkClient.getGroupOnline(target.getSystemUserId(), target.getGroupId(), authTokenVk());
+                    VkGroupResponse group = vkService.getGroupById(target.getSystemUserId(), target.getGroupId());
+                    Integer groupOnline = vkService.getGroupOnline(target.getSystemUserId(), target.getGroupId());
                     RabbitMqResponseAll response = new RabbitMqResponseAll();
                     response.setType(RabbitMqType.GROUP);
                     response.setSocialNetwork(SocialNetwork.VK);
@@ -117,19 +109,6 @@ public class BStatServiceImpl implements BStatService {
 
     private void RabbitMqGroupInfoSend(VkPostResponse response, SocialNetwork soc) {
 
-    }
-
-
-    private String authTokenVk() {
-        return "Bearer " + tokenVk.getToken();
-    }
-
-    private String authTokenBStat() {
-        return "Bearer " + tokenBStat.getToken();
-    }
-
-    private String authTokenFb() {
-        return "Bearer " + tokenFb.getToken();
     }
 
 }
