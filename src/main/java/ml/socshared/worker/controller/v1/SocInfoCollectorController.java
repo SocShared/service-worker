@@ -30,4 +30,9 @@ public class SocInfoCollectorController implements SocInfoCollectorApi {
         bStatService.startCollection(targetRequest);
         return new SuccessResponse(true);
     }
+
+    @GetMapping("private/time")
+    public LocalDateTime getServerTime() {
+        return LocalDateTime.now();
+    }
 }
