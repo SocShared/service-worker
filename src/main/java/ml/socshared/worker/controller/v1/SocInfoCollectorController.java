@@ -10,6 +10,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDateTime;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -29,5 +30,10 @@ public class SocInfoCollectorController implements SocInfoCollectorApi {
     public SuccessResponse startCollection(@RequestBody BStatTarget targetRequest) {
         bStatService.startCollection(targetRequest);
         return new SuccessResponse(true);
+    }
+
+    @GetMapping("private/time")
+    public LocalDateTime getServerTime() {
+        return LocalDateTime.now();
     }
 }
