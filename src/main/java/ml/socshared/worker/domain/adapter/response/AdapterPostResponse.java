@@ -1,18 +1,14 @@
-package ml.socshared.worker.domain.vk.response;
+package ml.socshared.worker.domain.adapter.response;
 
 
 import lombok.Data;
 
 import java.time.LocalDateTime;
-import java.util.Date;
 import java.util.UUID;
 
 
-
-
-
 @Data
-public class VkPostResponse {
+public class AdapterPostResponse {
 
     private UUID systemUserId;
     private String userId; //Id пользователя, который сделал пост
@@ -24,7 +20,7 @@ public class VkPostResponse {
     private Integer likesCount = 0;
     private Integer repostsCount = 0;
     private Integer viewsCount = 0;
-   // private LocalDateTime createdDate;
-    //private LocalDateTime updatedDate;
+    private LocalDateTime createdDate;
+    private LocalDateTime updatedDate;
 
 }

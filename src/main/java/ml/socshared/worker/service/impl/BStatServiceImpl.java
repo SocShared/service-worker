@@ -7,6 +7,8 @@ import lombok.extern.slf4j.Slf4j;
 import ml.socshared.worker.client.BstatClient;
 import ml.socshared.worker.client.VKAdapterClient;
 import ml.socshared.worker.config.RabbitMQConfig;
+import ml.socshared.worker.domain.adapter.response.AdapterGroupResponse;
+import ml.socshared.worker.domain.adapter.response.AdapterPostResponse;
 import ml.socshared.worker.domain.bstat.rabbitmq.RabbitMqType;
 import ml.socshared.worker.domain.bstat.rabbitmq.request.RabbitMqSocialRequest;
 import ml.socshared.worker.domain.bstat.rabbitmq.response.RabbitMqPostResponse;
@@ -18,6 +20,8 @@ import ml.socshared.worker.domain.vk.response.VkGroupResponse;
 import ml.socshared.worker.domain.vk.response.VkPostResponse;
 import ml.socshared.worker.security.model.TokenObject;
 import ml.socshared.worker.service.BStatService;
+import ml.socshared.worker.service.FacebookService;
+import ml.socshared.worker.service.SocAdapterService;
 import ml.socshared.worker.service.VkService;
 import org.springframework.amqp.rabbit.annotation.RabbitListener;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
@@ -30,6 +34,7 @@ import org.springframework.stereotype.Service;
 public class BStatServiceImpl implements BStatService {
 
     private final VkService vkService;
+    private final FacebookService fbService;
     private final RabbitTemplate rabbitTemplate;
 
     @Override
@@ -58,22 +63,27 @@ public class BStatServiceImpl implements BStatService {
             e.printStackTrace();
             return;
         }
+        SocAdapterService socialService = null;
         if(target.getSocialNetwork() == SocialNetwork.VK) {
-            log.info("Request get statistics of vk");
+            socialService = vkService;
+        } else {
+            socialService = fbService;
+        }
+            log.info("Request get statistics of {}", target.getSocialNetwork());
             if(target.getType().equals(RabbitMqType.POST)) {
                 try {
-                    VkPostResponse vkResult = vkService.getPostOfGroupById(target.getSystemUserId(),
-                            target.getGroupId(), target.getPostId());
+                    AdapterPostResponse result = socialService.getPostOfGroupById(target.getSystemUserId(),
+                                                     target.getGroupId(), target.getPostId());
                     RabbitMqResponseAll response = new RabbitMqResponseAll();
                     response.setType(RabbitMqType.POST);
-                    response.setSocialNetwork(SocialNetwork.VK);
+                    response.setSocialNetwork(target.getSocialNetwork());
                     response.setGroupId(target.getGroupId());
                     response.setPostId(target.getPostId());
                     response.setSystemUserId(target.getSystemUserId());
-                    response.setCommentsCount(vkResult.getCommentsCount());
-                    response.setLikesCount(vkResult.getLikesCount());
-                    response.setRepostsCount(vkResult.getRepostsCount());
-                    response.setViewsCount(vkResult.getViewsCount());
+                    response.setCommentsCount(result.getCommentsCount());
+                    response.setLikesCount(result.getLikesCount());
+                    response.setRepostsCount(result.getRepostsCount());
+                    response.setViewsCount(result.getViewsCount());
                     String serialize = objectMapper.writeValueAsString(response);
                     rabbitTemplate.convertAndSend(RabbitMQConfig.BSTAT_RESPONSE_EXCHANGE_NAME, RabbitMQConfig.ROUTING_KEY, serialize);
                 } catch (Exception exp) {
@@ -83,11 +93,17 @@ public class BStatServiceImpl implements BStatService {
 
             } else {
                 try{
-                    VkGroupResponse group = vkService.getGroupById(target.getSystemUserId(), target.getGroupId());
-                    Integer groupOnline = vkService.getGroupOnline(target.getSystemUserId(), target.getGroupId());
+
+                    AdapterGroupResponse group = socialService.getGroupById(target.getSystemUserId(), target.getGroupId());
+                    Integer groupOnline = 0;
+
+                    if(target.getSocialNetwork() == SocialNetwork.VK) {
+                        groupOnline = vkService.getGroupOnline(target.getSystemUserId(), target.getGroupId());
+                    }
+
                     RabbitMqResponseAll response = new RabbitMqResponseAll();
                     response.setType(RabbitMqType.GROUP);
-                    response.setSocialNetwork(SocialNetwork.VK);
+                    response.setSocialNetwork(target.getSocialNetwork());
                     response.setGroupId(group.getGroupId());
                     response.setMembersCount(group.getMembersCount());
                     response.setMembersOnline(groupOnline);
@@ -101,10 +117,6 @@ public class BStatServiceImpl implements BStatService {
 
             }
 
-
-        } else {
-            log.info("Request get statistics of facebook");
-        }
     }
 
     private void RabbitMqGroupInfoSend(VkPostResponse response, SocialNetwork soc) {

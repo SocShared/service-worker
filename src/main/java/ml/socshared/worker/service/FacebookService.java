@@ -5,8 +5,7 @@ import ml.socshared.worker.domain.facebook.response.FacebookPostResponse;
 
 import java.util.UUID;
 
-public interface FacebookService {
+public interface FacebookService extends SocAdapterService {
 
-    FacebookPostResponse savePost(UUID systemUserId, String groupId, FacebookPostRequest request);
 
 }
