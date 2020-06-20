@@ -9,9 +9,12 @@ import lombok.extern.slf4j.Slf4j;
 import ml.socshared.worker.client.StorageClient;
 import ml.socshared.worker.config.RabbitMQConfig;
 import ml.socshared.worker.domain.RestResponsePage;
+import ml.socshared.worker.domain.adapter.request.AdapterPostRequest;
+import ml.socshared.worker.domain.adapter.response.AdapterPostResponse;
 import ml.socshared.worker.domain.facebook.request.FacebookPostRequest;
 import ml.socshared.worker.domain.facebook.response.FacebookPostResponse;
 import ml.socshared.worker.domain.storage.GroupPostStatus;
+import ml.socshared.worker.domain.storage.SocialNetwork;
 import ml.socshared.worker.domain.storage.request.PublicationRequest;
 import ml.socshared.worker.domain.storage.response.GroupResponse;
 import ml.socshared.worker.domain.storage.response.PublicationResponse;
@@ -19,10 +22,7 @@ import ml.socshared.worker.domain.vk.request.VkPostRequest;
 import ml.socshared.worker.domain.vk.response.VkPostResponse;
 import ml.socshared.worker.exception.AbstractRestHandleableException;
 import ml.socshared.worker.exception.impl.HttpBadRequestException;
-import ml.socshared.worker.service.FacebookService;
-import ml.socshared.worker.service.StorageService;
-import ml.socshared.worker.service.VkService;
-import ml.socshared.worker.service.WorkerServiceScheduled;
+import ml.socshared.worker.service.*;
 import org.slf4j.LoggerFactory;
 import org.springframework.amqp.rabbit.annotation.RabbitListener;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
@@ -88,39 +88,40 @@ public class WorkerServiceScheduledImpl implements WorkerServiceScheduled {
         for (GroupPostStatus postStatus : response.getPostStatus()) {
             try {
                 if (postStatus.getPostStatus() == GroupPostStatus.PostStatus.PROCESSING) {
-                    switch (postStatus.getSocialNetwork()) {
-                        case VK:
-                            VkPostResponse vkPostResponse = saveVkPost(response.getUserId(), postStatus.getGroupVkId(), response.getText());
-                            log.info("vk post -> " + vkPostResponse);
-                            PublicationRequest resultVk = new PublicationRequest();
-                            resultVk.setType(response.getPostType());
-                            resultVk.setPublicationId(response.getPublicationId().toString());
-                            resultVk.setText(response.getText());
-                            resultVk.setStatusText("Success");
-                            resultVk.setPostStatus(GroupPostStatus.PostStatus.PUBLISHED);
-                            resultVk.setGroupIds(new String[]{postStatus.getGroupId().toString()});
-                            resultVk.setUserId(response.getUserId().toString());
-                            resultVk.setPostVkId(vkPostResponse.getPostId());
-                            resultVk.setPublicationDateTime(new Date());
-                            storageService.savePublication(resultVk);
-                            break;
-                        case FACEBOOK:
-                            FacebookPostResponse facebookPostResponse = saveFbPost(response.getUserId(), postStatus.getGroupFacebookId(), response.getText());
-                            log.info("fb post -> " + facebookPostResponse);
-                            PublicationRequest resultFb = new PublicationRequest();
-                            resultFb.setType(response.getPostType());
-                            resultFb.setPublicationId(response.getPublicationId().toString());
-                            resultFb.setText(response.getText());
-                            resultFb.setStatusText("Success");
-                            resultFb.setPostStatus(GroupPostStatus.PostStatus.PUBLISHED);
-                            resultFb.setGroupIds(new String[]{postStatus.getGroupId().toString()});
-                            resultFb.setUserId(response.getUserId().toString());
-                            resultFb.setPostFacebookId(facebookPostResponse.getPostId());
-                            resultFb.setPublicationDateTime(new Date());
-                            storageService.savePublication(resultFb);
-                            break;
+
+                            SocAdapterService adapterService = null;
+                            String socGroupId = "";
+                            String socPostId = "";
+                            if(postStatus.getSocialNetwork() == SocialNetwork.VK) {
+                                adapterService = vkService;
+                                socGroupId = postStatus.getGroupVkId();
+                            } else {
+                                adapterService = facebookService;
+                                socGroupId = postStatus.getGroupFacebookId();
+                            }
+                            AdapterPostResponse socPostResponse = adapterService.savePost(response.getUserId(), socGroupId,
+                                    new AdapterPostRequest(response.getText()));
+
+                            log.info("{} post -> {}", postStatus.getSocialNetwork(),  socPostResponse);
+
+                            PublicationRequest result = new PublicationRequest();
+                            result.setType(response.getPostType());
+                            result.setPublicationId(response.getPublicationId().toString());
+                            result.setText(response.getText());
+                            result.setStatusText("Success");
+                            result.setPostStatus(GroupPostStatus.PostStatus.PUBLISHED);
+                            result.setGroupIds(new String[]{postStatus.getGroupId().toString()});
+                            result.setUserId(response.getUserId().toString());
+
+                            if(postStatus.getSocialNetwork() == SocialNetwork.VK) {
+                                result.setPostVkId(socPostResponse.getPostId());
+                            } else {
+                                result.setPostFacebookId(socPostResponse.getPostId());
+                            }
+
+                            result.setPublicationDateTime(new Date());
+                            storageService.savePublication(result);
                     }
-                }
             } catch (AbstractRestHandleableException | RetryableException exc) {
                 String mes = "Connection refused: " + exc.getMessage();
                 if (exc instanceof AbstractRestHandleableException) {
@@ -142,21 +143,4 @@ public class WorkerServiceScheduledImpl implements WorkerServiceScheduled {
         }
     }
 
-    private VkPostResponse saveVkPost(UUID userId, String vkGroupId, String message) {
-        VkPostRequest reqVk = new VkPostRequest();
-        reqVk.setMessage(message);
-
-        log.info("message vk -> {} to group -> {}", message, vkGroupId);
-
-        return vkService.savePost(userId, vkGroupId, reqVk);
-    }
-
-    private FacebookPostResponse saveFbPost(UUID userId, String fbGroupId, String message) {
-        FacebookPostRequest reqFb = new FacebookPostRequest();
-        reqFb.setMessage(message);
-
-        log.info("message fb -> {} to group -> {}", message, fbGroupId);
-
-        return facebookService.savePost(userId, fbGroupId, reqFb);
-    }
 }

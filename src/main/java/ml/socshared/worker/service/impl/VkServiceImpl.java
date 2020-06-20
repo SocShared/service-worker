@@ -3,6 +3,9 @@ package ml.socshared.worker.service.impl;
 import lombok.RequiredArgsConstructor;
 import ml.socshared.worker.client.FacebookAdapterClient;
 import ml.socshared.worker.client.VKAdapterClient;
+import ml.socshared.worker.domain.adapter.request.AdapterPostRequest;
+import ml.socshared.worker.domain.adapter.response.AdapterGroupResponse;
+import ml.socshared.worker.domain.adapter.response.AdapterPostResponse;
 import ml.socshared.worker.domain.vk.request.VkPostRequest;
 import ml.socshared.worker.domain.vk.response.VkGroupResponse;
 import ml.socshared.worker.domain.vk.response.VkPostResponse;
@@ -24,17 +27,17 @@ public class VkServiceImpl implements VkService {
     private final VKAdapterClient client;
 
     @Override
-    public VkPostResponse savePost(UUID systemUserId, String groupId, VkPostRequest request) {
-        return client.addPostInGroup(systemUserId, groupId, request, "Bearer " + tokenVK.getToken());
+    public AdapterPostResponse savePost(UUID systemUserId, String groupId, AdapterPostRequest request) {
+        return client.addPost(systemUserId, groupId, request, "Bearer " + tokenVK.getToken());
     }
 
     @Override
-    public VkPostResponse getPostOfGroupById(UUID systemUserId, String socGroupId, String socPostId) {
+    public AdapterPostResponse getPostOfGroupById(UUID systemUserId, String socGroupId, String socPostId) {
         return client.getPostOfGroupById(systemUserId, socGroupId, socPostId, "Bearer " + tokenVK.getToken());
     }
 
     @Override
-    public VkGroupResponse getGroupById(UUID systemUserId, String socGroupId) {
+    public AdapterGroupResponse getGroupById(UUID systemUserId, String socGroupId) {
         return client.getGroupById(systemUserId, socGroupId, "Bearer " + tokenVK.getToken());
     }
 
