@@ -5,7 +5,7 @@ server:
       enabled: false
 spring:
   application:
-    name: socshared-service-worker
+    name: worker
   profiles:
     active: ${SPRING_PROFILE:local}
 
