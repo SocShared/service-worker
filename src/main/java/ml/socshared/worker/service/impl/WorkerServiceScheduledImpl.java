@@ -43,39 +43,39 @@ public class WorkerServiceScheduledImpl implements WorkerServiceScheduled {
 
     private final RabbitTemplate rabbitTemplate;
 
-    @Scheduled(fixedDelay = 100000)
-    public void startPost() throws IOException {
-        RestResponsePage<PublicationResponse> notPublishing = storageService.findNotPublishingAndReadyForPublishing();
-        List<PublicationResponse> publicationResponseList = notPublishing.getContent();
-        log.info("batch size publiction -> {}", publicationResponseList.size());
-        ObjectMapper objectMapper = new ObjectMapper();
-        objectMapper.registerModule(new JavaTimeModule());
-        for (PublicationResponse response : publicationResponseList) {
-            PublicationRequest request = new PublicationRequest();
-            request.setText(response.getText());
-            List<String> groupIds = new ArrayList<>();
-            log.info("prev publication response -> {}", response);
-            for (GroupPostStatus status : response.getPostStatus()) {
-                groupIds.add(status.getGroupId().toString());
-            }
-            request.setGroupIds(groupIds.toArray(String[]::new));
-            request.setUserId(response.getUserId().toString());
-            request.setType(response.getPostType());
-            request.setPublicationId(response.getPublicationId().toString());
-            log.info("Sending message...");
-            PublicationRequest result = new PublicationRequest();
-            result.setType(request.getType());
-            result.setPublicationId(request.getPublicationId());
-            result.setText(request.getText());
-            result.setPostStatus(GroupPostStatus.PostStatus.PROCESSING);
-            result.setGroupIds(groupIds.toArray(String[]::new));
-            result.setUserId(request.getUserId());
-            PublicationResponse resp = storageService.savePublication(result);
-            log.info("publication resp add queue -> {}", resp);
-            String serialize = objectMapper.writeValueAsString(resp);
-            rabbitTemplate.convertAndSend(RabbitMQConfig.EXCHANGE_NAME, RabbitMQConfig.ROUTING_KEY, serialize);
-        }
-    }
+//    @Scheduled(fixedDelay = 100000)
+//    public void startPost() throws IOException {
+//        RestResponsePage<PublicationResponse> notPublishing = storageService.findNotPublishingAndReadyForPublishing();
+//        List<PublicationResponse> publicationResponseList = notPublishing.getContent();
+//        log.info("batch size publiction -> {}", publicationResponseList.size());
+//        ObjectMapper objectMapper = new ObjectMapper();
+//        objectMapper.registerModule(new JavaTimeModule());
+//        for (PublicationResponse response : publicationResponseList) {
+//            PublicationRequest request = new PublicationRequest();
+//            request.setText(response.getText());
+//            List<String> groupIds = new ArrayList<>();
+//            log.info("prev publication response -> {}", response);
+//            for (GroupPostStatus status : response.getPostStatus()) {
+//                groupIds.add(status.getGroupId().toString());
+//            }
+//            request.setGroupIds(groupIds.toArray(String[]::new));
+//            request.setUserId(response.getUserId().toString());
+//            request.setType(response.getPostType());
+//            request.setPublicationId(response.getPublicationId().toString());
+//            log.info("Sending message...");
+//            PublicationRequest result = new PublicationRequest();
+//            result.setType(request.getType());
+//            result.setPublicationId(request.getPublicationId());
+//            result.setText(request.getText());
+//            result.setPostStatus(GroupPostStatus.PostStatus.PROCESSING);
+//            result.setGroupIds(groupIds.toArray(String[]::new));
+//            result.setUserId(request.getUserId());
+//            PublicationResponse resp = storageService.savePublication(result);
+//            log.info("publication resp add queue -> {}", resp);
+//            String serialize = objectMapper.writeValueAsString(resp);
+//            rabbitTemplate.convertAndSend(RabbitMQConfig.EXCHANGE_NAME, RabbitMQConfig.ROUTING_KEY, serialize);
+//        }
+//    }
 
     @RabbitListener(queues = RabbitMQConfig.QUEUE_PUBLICATION_NAME)
     public void receiveMessage(String message) throws IOException {
